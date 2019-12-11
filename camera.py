@@ -26,7 +26,7 @@ def upload_file(jpeg_bytes): #firebase storage에 jpg 파일을 업로드합니�
     date = now.strftime('%Y%m%d')
     time = now.strftime('%H%M')
     
-    my_url = "https://firebasestorage.googleapis.com/v0/b/smartdoorviewer-85ca9.appspot.com/o/" + date + '%2F' + time + '.jpeg'
+    my_url = "https://firebasestorage.googleapis.com/v0/b/smartdoorviewer-85ca9.appspot.com/o/" + date + '%2F' + time + '.jpg'
     my_headers = {"Content-Type": "image/jpeg"}
     my_request = urllib.request.Request(my_url, data=jpeg_bytes, headers=my_headers, method="POST")
     
@@ -42,12 +42,12 @@ def upload_file(jpeg_bytes): #firebase storage에 jpg 파일을 업로드합니�
 def save_database(date, time): #firebase database에 data를 저장합니다.
     if (not len(firebase_admin._apps)):
         cred = credentials.Certificate('serviceAccountKey.json') 
-    default_app = firebase_admin.initialize_app(cred, {'databaseURL': 'https://smartdoorviewer-85ca9.firebaseio.com'})
+        default_app = firebase_admin.initialize_app(cred, {'databaseURL': 'https://smartdoorviewer-85ca9.firebaseio.com'})
     ref = db.reference()
-    date_ref = ref.child('20191212') 
+    date_ref = ref.child(date) 
     if date_ref.get() is None:
-        ref.update({'20191212':'0'})
-        date_ref = ref.child('20191212')  
+        ref.update({date:'0'})
+        date_ref = ref.child(date)  
     date_ref.push(time)
         
 class Camera(object):
