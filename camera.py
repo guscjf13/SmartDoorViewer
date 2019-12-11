@@ -12,6 +12,7 @@ from datetime import datetime
 import firebase_admin
 from firebase_admin import db
 from firebase_admin import credentials
+from fcm import send_fcm_notification
 
 def detect(img, cascade):
     rects = cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30),
@@ -38,6 +39,7 @@ def upload_file(jpeg_bytes): #firebase storage에 jpg 파일을 업로드합니�
     else:
         print(loader.read())
         save_database(date, time)
+        send_fcm_notification()
         
 def save_database(date, time): #firebase database에 data를 저장합니다.
     if (not len(firebase_admin._apps)):
