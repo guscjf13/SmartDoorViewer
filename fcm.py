@@ -1,36 +1,28 @@
-#-*-coding:utf-8 -*-
-import time
-from pyfcm import FCMNotification
+# -*- coding: utf-8 -*-
 
-# 파이어베이스 콘솔에서 얻어 온 API키를 넣어 줌
-push_service = FCMNotification(api_key="AAAAhOiQCxI:APA91bFFGmA7HuzH6NjXQWxep793C7uGZZmhHS4kG9l__PYzhupeXffrCo0-Fe8AeA1wZOmjpA7MtcQdfKBCq_aVtFA5t4XMQO4b3ryo5qhj4PaPCfMd23H1DCXnVdhZodFuxpiGQxUb")
-'''
-여기서는 지정된 토큰 1개만 넣어서 사용함. 
-좀 더 확장할려면 토큰을 앱으로 부터 받거나 앱서버 DB에서 가져와서 다수의 토큰에 알림을 발송 할 수도 있음.
-'''
-mToken = "dxDhqJNLgfQ:APA91bH56eOxySDPl3zzmck7OvxHWHRzPHuNm-H1-O1UGUa5fgjJW1nWCYEiUbW0gz3z5Kp1Ho8RVWe9hxaQzrWozp7R2n_HfwIzEcoyStqaJyEMq3066k4WqFQmgFqiuQVF_6HVkZ7H"
-nth = 0
+import requests
+import json
 
-def sendMessage(p):
 
-    global nth
-    nth += 1
-    registration_id = mToken
-
-    data_message = {
-        "body" : str(nth) + "번째 테스트 알림입니다."
+def send_fcm_notification():
+    # fcm 푸시 메세지 요청 주소
+    url = 'https://fcm.googleapis.com/fcm/send'
+    
+    # 인증 정보(서버 키)를 헤더에 담아 전달
+    headers = {
+        'Authorization': 'key=AAAAhOiQCxI:APA91bFFGmA7HuzH6NjXQWxep793C7uGZZmhHS4kG9l__PYzhupeXffrCo0-Fe8AeA1wZOmjpA7MtcQdfKBCq_aVtFA5t4XMQO4b3ryo5qhj4PaPCfMd23H1DCXnVdhZodFuxpiGQxUb',
+        'Content-Type': 'application/json'
     }
-    
-    #data payload만 보내야 안드로이드 앱에서 백그라운드/포그라운드 두가지 상황에서 onMessageReceived()가 실행됨
-    result = push_service.single_device_data_message(registration_id=registration_id, data_message=data_message)
-    print(result)
 
-def _main():
-    
-    while True:
-        sendMessage(80)
-        time.sleep(60 * 1)
+    # 보낼 내용과 대상을 지정
+    content = {
+        'to': "cTCsFbxeuoI:APA91bFV85WmVi1nf-CWpmlk8lmon5iEfExpMlyps-btGhtNQMNe65P_jaTzfT7PiszrgQbMu7TsJQ0Axfpq0to4lLZtrKPBsTN_70ucg0eAQikZEpzV_kRsv6GnL55mCxcN__OEoVFG",
+        'notification': {
+            'title': "스마트 도어 뷰어",
+            'body': "누가 나타났어요!!",
+            'sound': 'default'
+        }
+    }
 
-if __name__ == "__main__":
-	_main()
-
+    # json 파싱 후 requests 모듈로 FCM 서버에 요청
+    requests.post(url, data=json.dumps(content), headers=headers)
