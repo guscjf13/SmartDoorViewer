@@ -8,7 +8,7 @@ import picamera
 import io
 import numpy as np
 import urllib
-from datetime import datetime
+from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import db
 from firebase_admin import credentials
@@ -56,7 +56,7 @@ class Camera(object):
     camera = None
     thread = None
     frame = None
-
+    
     def initialize(self):
         if Camera.thread is None:
             Camera.thread = threading.Thread(target=self._thread)
@@ -87,8 +87,7 @@ class Camera(object):
         time.sleep(2)
 
         stream = io.BytesIO()
-        detect_flag = False
-        cnt = 0
+        rescent_detect_time = None
         for foo in cls.camera.capture_continuous(stream, 'jpeg',
                                              use_video_port=True):
             stream.seek(0)
@@ -101,16 +100,17 @@ class Camera(object):
             rects = detect(gray, cascade)
             if rects != []:
                 print("face detect!")
-                if detect_flag == False:
-                    upload_file(frame)
-                    detect_flag = True
-                
-            if detect_flag:
-                cnt+=1
-            
-            if cnt >= 50:
-                detect_flag = False
-                cnt = 0
+                if rescent_detect_time is not None:
+                    now = datetime.now()
+                    delta = now-rescent_detect_time
+                    if delta.seconds > 30:
+                        my_thread = threading.Thread(target=upload_file, args=[frame])
+                        my_thread.start()
+                        rescent_detect_time = now
+                if rescent_detect_time is None:
+                    my_thread = threading.Thread(target=upload_file, args=[frame])
+                    my_thread.start()
+                    rescent_detect_time = datetime.now()
                                 
             cls.frame = frame
             
