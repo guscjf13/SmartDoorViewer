@@ -2,6 +2,8 @@
 #-*- coding: utf-8 -*-
 from flask import Flask, render_template, Response
 from camera import Camera
+import capture
+import threading
 
 app = Flask(__name__)
 
@@ -20,8 +22,12 @@ def gen(camera):
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(gen(Camera()),
+    global camera
+    return Response(gen(camera),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
-
+    
 if __name__ == '__main__':
+    global camera
+    camera = Camera()
+    camera.initialize()
     app.run(host='203.252.166.213', debug=True, threaded=True)
