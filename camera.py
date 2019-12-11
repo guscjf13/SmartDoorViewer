@@ -9,6 +9,9 @@ import io
 import numpy as np
 import urllib
 from datetime import datetime
+import firebase_admin
+from firebase_admin import db
+from firebase_admin import credentials
 
 def detect(img, cascade):
     rects = cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30),
@@ -18,20 +21,15 @@ def detect(img, cascade):
     rects[:,2:] += rects[:,:2]
     return rects
 
-def draw_rects(img, rects, color):
-    for x1, y1, x2, y2 in rects:
-        cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
-
-def upload_file(jpeg_bytes):
+def upload_file(jpeg_bytes): #firebase storage에 jpg 파일을 업로드합니다.
     now = datetime.now()
     date = now.strftime('%Y%m%d')
     time = now.strftime('%H%M')
     
     my_url = "https://firebasestorage.googleapis.com/v0/b/smartdoorviewer-85ca9.appspot.com/o/" + date + '%2F' + time + '.jpeg'
-    print(my_url)
     my_headers = {"Content-Type": "image/jpeg"}
     my_request = urllib.request.Request(my_url, data=jpeg_bytes, headers=my_headers, method="POST")
-
+    
     try:
         loader = urllib.request.urlopen(my_request)
     except urllib.error.URLError as e:
@@ -39,6 +37,18 @@ def upload_file(jpeg_bytes):
         print(message["error"]["message"])
     else:
         print(loader.read())
+        save_database(date, time)
+        
+def save_database(date, time): #firebase database에 data를 저장합니다.
+    if (not len(firebase_admin._apps)):
+        cred = credentials.Certificate('serviceAccountKey.json') 
+    default_app = firebase_admin.initialize_app(cred, {'databaseURL': 'https://smartdoorviewer-85ca9.firebaseio.com'})
+    ref = db.reference()
+    date_ref = ref.child('20191212') 
+    if date_ref.get() is None:
+        ref.update({'20191212':'0'})
+        date_ref = ref.child('20191212')  
+    date_ref.push(time)
         
 class Camera(object):
     camera = None
