@@ -8,6 +8,7 @@ import picamera
 import io
 import numpy as np
 import urllib
+from datetime import datetime
 
 def detect(img, cascade):
     rects = cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30),
@@ -22,7 +23,12 @@ def draw_rects(img, rects, color):
         cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
 
 def upload_file(jpeg_bytes):
-    my_url = "https://firebasestorage.googleapis.com/v0/b/smartdoorviewer-85ca9.appspot.com/o/20191209%2F1713.jpeg"
+    now = datetime.now()
+    date = now.strftime('%Y%m%d')
+    time = now.strftime('%H%M')
+    
+    my_url = "https://firebasestorage.googleapis.com/v0/b/smartdoorviewer-85ca9.appspot.com/o/" + date + '%2F' + time + '.jpeg'
+    print(my_url)
     my_headers = {"Content-Type": "image/jpeg"}
     my_request = urllib.request.Request(my_url, data=jpeg_bytes, headers=my_headers, method="POST")
 
@@ -38,13 +44,12 @@ class Camera(object):
     camera = None
     thread = None
     frame = None
-    last_access = 0
 
     def initialize(self):
         if Camera.thread is None:
             Camera.thread = threading.Thread(target=self._thread)
             Camera.thread.start()
-
+            print("start")
         #if Camera.capture_thread is None:
         #    Camera.capture_thread = threading.Thread(target=self._capture_thread)
         #    Camera.capture_thread.start()

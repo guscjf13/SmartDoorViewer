@@ -22,6 +22,7 @@ def gen(camera):
 
 @app.route('/video_feed')
 def video_feed():
+    print("video_feed")
     global camera
     return Response(gen(camera),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -30,4 +31,4 @@ if __name__ == '__main__':
     global camera
     camera = Camera()
     camera.initialize()
-    app.run(host='203.252.166.213', debug=True, threaded=True)
+    app.run(host='203.252.166.213', debug=False, threaded=True)
